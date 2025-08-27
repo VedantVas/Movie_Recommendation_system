@@ -3,14 +3,14 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import ast, re, difflib, requests
+import ast, re, difflib
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # --- Load Sample Data ---
 @st.cache_data
 def load_data():
-    movies = pd.read_csv("tmdb_5000_credits.csv")  # use the sampled dataset
+    movies = pd.read_csv("tmdb_5000_movies.csv")  # corrected
     credits = pd.read_csv("tmdb_5000_credits.csv")
 
     credits.rename(columns={'movie_id': 'id'}, inplace=True)
@@ -93,7 +93,7 @@ def resolve_title(q):
 # --- Recommend ---
 def recommend(title, top_n=5, w_soup=0.6, w_overview=0.4):
     true_title = resolve_title(title)
-    if not true_title:
+    if not true_title or true_title.lower() not in indices:
         return pd.DataFrame(columns=['title','score','genres','vote_average','runtime','release_date'])
     idx = indices[true_title.lower()]
     sim_soup = cosine_similarity(soup_mat[idx], soup_mat).ravel()
@@ -107,21 +107,11 @@ def recommend(title, top_n=5, w_soup=0.6, w_overview=0.4):
 
 # --- Fetch poster ---
 def fetch_poster(title):
-    api_url = "https://api.themoviedb.org/3/search/movie"
-    params = {"api_key": "demo", "query": title}  # replace "demo" with your TMDB API key if available
-    try:
-        r = requests.get(api_url, params=params).json()
-        if r.get("results"):
-            poster_path = r["results"][0].get("poster_path")
-            if poster_path:
-                return "https://image.tmdb.org/t/p/w500" + poster_path
-    except:
-        return None
-    return None
+    # removed API call; use placeholder
+    return "https://via.placeholder.com/300x450?text=No+Poster"
 
 # --- Streamlit UI ---
 st.set_page_config(page_title="🎬 Movie Recommender", layout="wide")
-
 st.title("🎬 Content-Based Movie Recommendation System")
 st.markdown("Search for a movie and get **similar recommendations** based on metadata + description.")
 
